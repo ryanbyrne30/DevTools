@@ -1,0 +1,32 @@
+#!/bin/bash
+
+while getopts 'hf:p:v:' OPTION; do 
+  case "$OPTION" in
+    h)
+      echo "Usage: $0 [-h] [-f file] [-p parameter] [-v value]" >&2
+      ;;
+    f)
+      file="$OPTARG"
+      ;;
+    p)
+      param="$OPTARG"
+      ;;
+    v)
+      value="$OPTARG"
+      ;;
+    ?)
+      echo "Usage: $0 [-h] [-f file] [-p parameter] [-v value]" >&2
+      exit 1
+      ;;
+  esac
+done 
+
+shift "$(($OPTIND -1))"
+
+if [ "$file" = "" ] || [ "$param" = "" ] || [ "$value" = "" ]
+then 
+  echo "Usage: $0 [-h] [-f file] [-p parameter] [-v value]" >&2
+  exit 1
+fi
+
+sed -i "/^[\#\ ]*$param/{h;s/^.*$/$param $value/};\${x;/^$/{s//$param $value/;H};x}" $file

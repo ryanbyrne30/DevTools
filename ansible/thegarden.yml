@@ -1,0 +1,19 @@
+---
+- hosts: remote
+  become: true
+  pre_tasks:
+  - name: Update repository index (Ubuntu)
+    tags: always
+    apt:
+      update_cache: yes
+    changed_when: false
+    when: ansible_distribution == "Ubuntu"
+  - name: Upgrade system
+    tags: upgrade
+    apt: upgrade=dist force_apt_get=yes
+
+- hosts: remote
+  become: true
+  roles:
+    - ssh_server
+    - vmHost

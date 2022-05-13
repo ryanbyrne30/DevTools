@@ -1,0 +1,23 @@
+- name: Install KVM dependencies
+  apt:
+    name: 
+      - cpu-checker
+      - qemu-kvm
+      - libvirt-daemon-system
+      - libvirt-clients
+      - bridge-utils
+    state: latest
+
+- name: Add user {{ ansible_user }} to libvirt and kvm groups
+  user: 
+    name: "{{ ansible_user }}"
+    groups:
+      - kvm
+      - libvirt
+    append: yes
+
+- name: Start libvirtd service
+  systemd:
+    name: libvirtd
+    state: started
+
