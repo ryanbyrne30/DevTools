@@ -1,0 +1,28 @@
+- name: Restart sshd
+  become: yes
+  service:
+    name: sshd
+    enabled: yes
+    state: restarted
+  listen: "restart network"
+
+- name: Restart libvirtd
+  become: yes
+  systemd:
+    name: libvirtd
+    enabled: yes
+    state: started
+  listen: "restart network"
+
+- name: Start ufw
+  become: yes
+  community.general.ufw:
+    state: enabled
+    policy: allow
+  listen: "start network"
+
+- name: Restart ufw
+  become: yes
+  community.general.ufw:
+    state: reloaded
+  listen: "restart network"

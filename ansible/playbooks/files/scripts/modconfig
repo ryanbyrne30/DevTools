@@ -29,4 +29,4 @@ then
   exit 1
 fi
 
-sed -i "/^[\#\ ]*$param/{h;s/^.*$/$param $value/};\${x;/^$/{s//$param $value/;H};x}" $file
+sed -i "/^#*$param\ [A-Za-z0-9\@\_\,\:\.\-]*[\ ]*$/{h;s/^.*$/$param $value/};\${x;/^$/{s//$param $value/;H};x}" $file

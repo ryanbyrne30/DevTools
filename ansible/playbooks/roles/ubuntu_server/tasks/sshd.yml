@@ -1,0 +1,65 @@
+- name: Copy public keys to server
+  copy: 
+    src: keys
+    dest: ~/.ssh/
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0644
+
+- name: Add public keys to authorized_keys
+  shell: |
+    dest=~/.ssh/authorized_keys
+
+    # create authorized_keys if not exists
+    ! (test -f $dest) && touch $dest
+    
+    for file in ~/.ssh/keys/*;
+    do
+      # add keys to file if not already added
+      echo "Adding key from $file to $dest"
+      ! (grep "$(cat $file)" $dest) && cat $file >> $dest
+    done
+    exit 0
+  register: add_keys
+
+- name: Cleanup keys
+  file:
+    path: ~/.ssh/keys 
+    state: absent
+
+- name: Harden sshd_config from https://node-security.com/posts/ssh-server-hardening/
+  become: true
+  shell: |
+    target=/etc/ssh/sshd_config
+    cmd={{ cmd_folder }}/modconfig
+
+    # create original backup
+    ! (test -f $target.orig) && cp $target $target.orig 
+
+    $cmd -p Port -v "{{ new_port }}" -f $target
+    $cmd -p SyslogFacility -v AUTH -f $target
+    $cmd -p LogLevel -v INFO -f $target
+    $cmd -p MaxAuthTries -v 3 -f $target
+    $cmd -p PubkeyAuthentication -v yes -f $target
+    $cmd -p PasswordAuthentication -v no -f $target
+    $cmd -p PermitEmptyPasswords -v no -f $target
+    $cmd -p PermitRootLogin -v no -f $target
+    $cmd -p AllowUsers -v "{{ ansible_user }}" -f $target
+    $cmd -p X11Forwarding -v no -f $target
+    $cmd -p GatewayPorts -v no -f $target
+    $cmd -p Ciphers -v aes256-gcm@openssh.com,aes256-ctr -f $target
+    $cmd -p KexAlgorithms -v curve25519-sha256@libssh.org,ecdh-sha2-nistp521 -f $target
+    $cmd -p MACs -v hmac-sha2-512-etm@openssh.com,hmac-sha2-512 -f $target
+    $cmd -p Protocol -v 2 -f $target
+    # $cmd -p PermitUserEnvironment -v no -f $target
+    
+    # create original backup
+    ! (test -f /etc/ssh/moduli.orig) && cp /etc/ssh/moduli /etc/ssh/moduli.orig 
+
+    # disable small Diffie-Hellman key sizes
+    awk '$5 >= 3071' /etc/ssh/moduli > /etc/ssh/moduli.safe
+    mv /etc/ssh/moduli.safe /etc/ssh/moduli
+  notify:
+    - Restart sshd
+
+- debug: msg="{{ add_keys.stdout }}"

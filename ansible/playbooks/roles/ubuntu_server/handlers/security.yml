@@ -1,0 +1,15 @@
+- name: Restart clamav
+  become: yes 
+  service:
+    name: clamav-daemon
+    enabled: yes
+    state: restarted
+  listen: "restart security"
+
+- name: Restart freshclam
+  become: yes 
+  service:
+    name: clamav-freshclam
+    enabled: yes
+    state: restarted
+  listen: "restart security"

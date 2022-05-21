@@ -1,0 +1,34 @@
+- name: Install ufw
+  become: yes
+  apt:
+    name:
+      - ufw
+    state: latest
+  notify:
+    - Start ufw
+
+- name: Turn on ufw logging
+  become: yes 
+  community.general.ufw:
+    logging: 'on'
+  notify:
+    - Start ufw
+
+- name: Limit ssh attempts for ufw
+  become: yes 
+  community.general.ufw:
+    rule: limit
+    port: ssh
+    proto: tcp
+  notify:
+    - Restart ufw
+
+- name: Allow OpenSSH for ufw
+  become: yes 
+  community.general.ufw:
+    rule: allow
+    name: OpenSSH
+  notify:
+    - Restart ufw
+  
+  

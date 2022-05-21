@@ -1,0 +1,47 @@
+- name: Install Google Authenticator
+  become: yes
+  apt:
+    name:
+      - libpam-google-authenticator
+    state: latest
+
+- name: Add Google Auth PAM to /etc/pam.d/sshd
+  become: yes
+  shell: |
+    target=/etc/pam.d/sshd
+
+    test -f $target.original && \
+    cp $target $target.original
+
+    if ! grep pam_google_authenticator.so $target; \
+    then \
+      echo "" >> $target \
+      && echo "# use google authentication" >> $target \
+      && echo "auth required pam_google_authenticator.so" >> $target
+    fi
+
+- name: Add Google Auth configs to /etc/ssh/sshd_config
+  become: yes
+  shell: |
+    target=/etc/ssh/sshd_config
+    modconfig={{ cmd_folder }}/modconfig
+    netmask=$({{ cmd_folder }}/netinfo -m)
+
+    # create backup if not created
+    ! (test -f $target.orig) && cp $target $target.orig
+
+    $modconfig -p UsePAM -v yes -f $target
+    $modconfig -p AuthenticationMethods -v publickey,keyboard-interactive -f $target
+    $modconfig -p ChallengeResponseAuthentication -v yes -f $target
+    $modconfig -p KbdInteractiveAuthentication -v yes -f $target
+
+    cat $target | grep -e "Match Address $netmask"
+    if [ "$?" -ne "0" ]
+    then
+      echo "\n#Only use publickey on local network" >> $target
+      echo "Match Address $netmask" >> $target
+      echo "\tAuthenticationMethods publickey" >> $target
+    fi
+    exit 0
+  notify: 
+    - Restart sshd

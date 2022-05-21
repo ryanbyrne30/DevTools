@@ -1,4 +1,5 @@
 - name: Install KVM dependencies
+  become: yes
   apt:
     name: 
       - cpu-checker
@@ -9,15 +10,11 @@
     state: latest
 
 - name: Add user {{ ansible_user }} to libvirt and kvm groups
+  become: yes
   user: 
     name: "{{ ansible_user }}"
     groups:
       - kvm
       - libvirt
     append: yes
-
-- name: Start libvirtd service
-  systemd:
-    name: libvirtd
-    state: started
 

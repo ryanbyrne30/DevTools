@@ -1,0 +1,10 @@
+- name: Copy commands to folder
+  copy:
+    src: scripts/
+    dest: "{{ cmd_folder }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0500
+
+- name: Export commands
+  shell: export PATH="$PATH:{{ cmd_folder }}"

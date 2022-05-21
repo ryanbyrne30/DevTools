@@ -1,0 +1,24 @@
+- name: Disable sleep
+  systemd:
+    name: sleep.target
+    masked: yes
+  ignore_errors: yes
+
+- name: Disable suspend
+  systemd:
+    name: suspend.target
+    masked: yes
+  ignore_errors: yes
+
+- name: Disable hibernate
+  systemd:
+    name: hibernate.target
+    masked: yes
+  ignore_errors: yes
+
+- name: Disable hybrid-sleep
+  systemd:
+    name: hybrid-sleep.target
+    masked: yes
+  ignore_errors: yes
+

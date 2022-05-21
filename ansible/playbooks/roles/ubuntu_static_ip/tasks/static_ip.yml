@@ -1,0 +1,23 @@
+- name: "Create static ip - {{ static_ip }}"
+  shell: |
+    interface=$({{ cmd_folder }}/netinfo -n)
+    gateway=$({{ cmd_folder }}/netinfo -g)
+    file=/etc/netplan/00-installer-config.yaml
+    
+    test -f $file.orig \
+    && cp $file $file.orig
+
+    echo "Using network interface: $interface"
+    python3 -c "
+    import yaml
+    with open('$file', 'r') as f:
+      y = yaml.safe_load(f)
+      y['network']['ethernets']['$interface']['addresses'] = ['{{ static_ip }}/24']
+      y['network']['ethernets']['$interface']['nameservers'] = {'addresses': ['8.8.8.8','8.8.4.4']}
+      y['network']['ethernets']['$interface']['routes'] = [{ 'to': 'default', 'via': '$gateway' }]
+    with open('$file', 'w') as f:
+      yaml.dump(y, f, default_flow_style=False, sort_keys=False)
+    "
+  when: ansible_facts['os_family'] == 'Debian'
+  notify:
+    - Netplan apply

@@ -1,0 +1,15 @@
+- name: Install ClamAV
+  become: yes
+  apt:
+    name:
+      - clamav
+      - clamav-daemon
+    state: latest
+  notify:
+    - Restart freshclam
+    - Restart clamav
+
+- name: Run freshclam
+  become: yes
+  shell: freshclam
+  ignore_errors: yes

@@ -1,0 +1,8 @@
+- import_tasks: use_commands.yml
+- import_tasks: sshd.yml
+- import_tasks: sshd_google_auth.yml
+- import_tasks: install_antivirus.yml
+- import_tasks: install_kvm.yml
+- import_tasks: install_firewalls.yml
+- import_tasks: always_on.yml
+- import_tasks: clean_commands.yml

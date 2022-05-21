@@ -1,0 +1,4 @@
+- name: Remove command folder
+  file:
+    path: "{{ cmd_folder }}"
+    state: absent
